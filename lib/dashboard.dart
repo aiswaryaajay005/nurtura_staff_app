@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:staff_app/attendence.dart';
 import 'package:staff_app/child_view.dart';
+import 'package:staff_app/event_participant_list.dart';
 
 import 'package:staff_app/media.dart';
 import 'package:staff_app/schedule.dart';
 import 'package:staff_app/staffprofile.dart';
 import 'package:staff_app/view_events.dart';
+import 'package:staff_app/view_leave_details.dart';
 import 'package:staff_app/view_post.dart';
 import 'package:staff_app/viewchild.dart';
 
@@ -193,6 +195,102 @@ class StaffDashboard extends StatelessWidget {
                               height: 20,
                             ),
                             Text('Events',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontFamily: 'Lato',
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {},
+                      child: Card(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(30))),
+                        child: Column(
+                          children: [
+                            SizedBox(height: 20),
+                            Icon(
+                              Icons.check_box,
+                              color: Colors.deepPurple,
+                              size: 60,
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text('Attendence',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontFamily: 'Lato',
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EventParticipantList(),
+                            ));
+                      },
+                      child: Card(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(30))),
+                        child: Column(
+                          children: [
+                            SizedBox(height: 20),
+                            Icon(
+                              Icons.list,
+                              color: Colors.deepPurple,
+                              size: 60,
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text('Event Participants',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontFamily: 'Lato',
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ViewLeaveDetails(),
+                            ));
+                      },
+                      child: Card(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(30))),
+                        child: Column(
+                          children: [
+                            SizedBox(height: 20),
+                            Icon(
+                              Icons.notification_important_outlined,
+                              color: Colors.deepPurple,
+                              size: 60,
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text('Leave Notifications',
                                 style: TextStyle(
                                     fontSize: 20,
                                     fontFamily: 'Lato',

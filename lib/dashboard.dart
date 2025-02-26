@@ -205,7 +205,13 @@ class StaffDashboard extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AttendencePage(),
+                            ));
+                      },
                       child: Card(
                         color: Colors.white,
                         shape: RoundedRectangleBorder(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:staff_app/form_validation.dart';
 import 'package:staff_app/main.dart';
 
 class AddActivity extends StatefulWidget {
@@ -10,6 +11,7 @@ class AddActivity extends StatefulWidget {
 }
 
 class _AddActivityState extends State<AddActivity> {
+  final _formKey = GlobalKey<FormState>();
   TextEditingController _datecontroller = TextEditingController();
   TextEditingController _feelingscontroller = TextEditingController();
 
@@ -61,157 +63,164 @@ class _AddActivityState extends State<AddActivity> {
             ),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Activity date',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 5),
-                  TextFormField(
-                      readOnly: true,
-                      controller: _datecontroller,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Activity date',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 5),
+                    TextFormField(
+                        validator: (value) =>
+                            FormValidation.validateDate(value),
+                        readOnly: true,
+                        controller: _datecontroller,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          hintText: 'Select Date',
+                          prefixIcon: Icon(Icons.calendar_today,
+                              color: Colors.deepPurple),
+                        ),
+                        onTap: () async {
+                          DateTime? pickedDate = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2100),
+                          );
+                          if (pickedDate != null) {
+                            String formattedDate =
+                                "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+                            setState(() {
+                              _datecontroller.text = formattedDate;
+                            });
+                          }
+                        }),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Feeling Details',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 5),
+                    TextFormField(
+                      controller: _feelingscontroller,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        hintText: 'Select Date',
-                        prefixIcon: Icon(Icons.calendar_today,
+                        hintText: "How's the child feeling today?",
+                        prefixIcon: Icon(Icons.child_friendly_outlined,
                             color: Colors.deepPurple),
                       ),
-                      onTap: () async {
-                        DateTime? pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
-                        );
-                        if (pickedDate != null) {
-                          String formattedDate =
-                              "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-                          setState(() {
-                            _datecontroller.text = formattedDate;
-                          });
-                        }
-                      }),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Feeling Details',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 5),
-                  TextFormField(
-                    controller: _feelingscontroller,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      hintText: "How's the child feeling today?",
-                      prefixIcon: Icon(Icons.child_friendly_outlined,
-                          color: Colors.deepPurple),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Nap schedule',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 5),
-                  Row(
-                    children: [
-                      Icon(Icons.bedtime, color: Colors.deepPurple),
-                      SizedBox(height: 10),
-                      Expanded(
-                        child: Slider(
-                          value: napScale,
-                          max: 10,
-                          min: 0,
-                          divisions: 10,
-                          label: napScale.toString(),
-                          onChanged: (value) {
-                            setState(() {
-                              napScale = value;
-                            });
-                          },
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Nap schedule',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Icon(Icons.bedtime, color: Colors.deepPurple),
+                        SizedBox(height: 10),
+                        Expanded(
+                          child: Slider(
+                            value: napScale,
+                            max: 10,
+                            min: 0,
+                            divisions: 10,
+                            label: napScale.toString(),
+                            onChanged: (value) {
+                              setState(() {
+                                napScale = value;
+                              });
+                            },
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Play Time Activities',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 5),
-                  Row(
-                    children: [
-                      Icon(Icons.toys, color: Colors.deepPurple),
-                      SizedBox(height: 10),
-                      Expanded(
-                        child: Slider(
-                          value: playScale,
-                          max: 10,
-                          min: 0,
-                          divisions: 10,
-                          label: playScale.toString(),
-                          onChanged: (value) {
-                            setState(() {
-                              playScale = value;
-                            });
-                          },
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Play Time Activities',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Icon(Icons.toys, color: Colors.deepPurple),
+                        SizedBox(height: 10),
+                        Expanded(
+                          child: Slider(
+                            value: playScale,
+                            max: 10,
+                            min: 0,
+                            divisions: 10,
+                            label: playScale.toString(),
+                            onChanged: (value) {
+                              setState(() {
+                                playScale = value;
+                              });
+                            },
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Learning Activities',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 5),
-                  Row(
-                    children: [
-                      Icon(Icons.school, color: Colors.deepPurple),
-                      SizedBox(height: 10),
-                      Expanded(
-                        child: Slider(
-                          value: learnScale,
-                          max: 10,
-                          min: 0,
-                          divisions: 10,
-                          label: learnScale.toString(),
-                          onChanged: (value) {
-                            setState(() {
-                              learnScale = value;
-                            });
-                          },
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Learning Activities',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Icon(Icons.school, color: Colors.deepPurple),
+                        SizedBox(height: 10),
+                        Expanded(
+                          child: Slider(
+                            value: learnScale,
+                            max: 10,
+                            min: 0,
+                            divisions: 10,
+                            label: learnScale.toString(),
+                            onChanged: (value) {
+                              setState(() {
+                                learnScale = value;
+                              });
+                            },
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Center(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.deepPurple,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 40, vertical: 12),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 12),
-                      ),
-                      onPressed: () {
-                        insertData();
-                      },
-                      child: const Text(
-                        "Save Activity Details",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            insertData();
+                          }
+                        },
+                        child: const Text(
+                          "Save Activity Details",
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

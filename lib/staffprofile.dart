@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:staff_app/edit_password.dart';
+import 'package:staff_app/login.dart';
 import 'package:staff_app/main.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -271,6 +272,39 @@ class _AccountPageState extends State<AccountPage> {
                               'Edit Profile',
                               style: TextStyle(color: Colors.white),
                             ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 100, right: 100, top: 30),
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            await supabase.auth.signOut();
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => StaffLogin(),
+                              ),
+                              (Route<dynamic> route) => false,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple[300],
+                            padding: EdgeInsets.symmetric(
+                                vertical: 15, horizontal: 0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            elevation: 5,
+                          ),
+                          icon: Icon(Icons.logout_sharp),
+                          label: Text(
+                            "Log out",
+                            style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),

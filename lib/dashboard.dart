@@ -1,18 +1,141 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:staff_app/attendence.dart';
 import 'package:staff_app/child_view.dart';
 import 'package:staff_app/event_participant_list.dart';
 
-import 'package:staff_app/media.dart';
+import 'package:confetti/confetti.dart';
+import 'package:staff_app/main.dart';
 import 'package:staff_app/schedule.dart';
 import 'package:staff_app/staffprofile.dart';
 import 'package:staff_app/view_events.dart';
 import 'package:staff_app/view_leave_details.dart';
+import 'package:staff_app/view_meal.dart';
 import 'package:staff_app/view_post.dart';
-import 'package:staff_app/viewchild.dart';
 
-class StaffDashboard extends StatelessWidget {
+class StaffDashboard extends StatefulWidget {
   const StaffDashboard({super.key});
+
+  @override
+  State<StaffDashboard> createState() => _StaffDashboardState();
+}
+
+class _StaffDashboardState extends State<StaffDashboard> {
+  final ConfettiController _confettiController =
+      ConfettiController(duration: Duration(seconds: 5));
+
+  Future<void> checkAndShowBirthdayDialogue(BuildContext context) async {
+    List<Map<String, dynamic>> todaysBirthdays = await getTodaysBirthdays();
+
+    if (todaysBirthdays.isNotEmpty) {
+      String names =
+          todaysBirthdays.map((child) => child['child_name']).join(', ');
+      birthdayDialogue(context, names);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getTodaysBirthdays() async {
+    String today = DateFormat('MM-dd').format(DateTime.now());
+
+    try {
+      final response = await supabase
+          .from('tbl_child')
+          .select('id, child_name, child_dob, child_photo');
+      if (response.isEmpty) return [];
+
+      List<Map<String, dynamic>> birthdayChildren = response.where((child) {
+        String dob = child['child_dob'];
+        return dob.substring(5) == today;
+      }).toList();
+
+      return birthdayChildren;
+    } catch (e) {
+      print("Error fetching birthdays: $e");
+      return [];
+    }
+  }
+
+  void birthdayDialogue(BuildContext context, String birthdayNames) {
+    _confettiController.play();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: Colors.deepPurple.shade500,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "🎉 We have a birthday today! 🎂",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "$birthdayNames is celebrating their birthday today! Let's make it special!",
+                      style: TextStyle(fontSize: 16, color: Colors.white70),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        _confettiController.stop();
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Text("Ok",
+                          style: TextStyle(color: Colors.deepPurple)),
+                    )
+                  ],
+                ),
+              ),
+              Positioned(
+                top: 0,
+                child: ConfettiWidget(
+                  confettiController: _confettiController,
+                  blastDirectionality: BlastDirectionality.explosive,
+                  shouldLoop: false,
+                  colors: [
+                    Colors.white,
+                    Colors.deepPurple,
+                    Colors.red,
+                    Colors.pink,
+                    Colors.blue,
+                    Colors.yellow,
+                    Colors.green
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    checkAndShowBirthdayDialogue(context);
+
+    _confettiController.play();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +336,7 @@ class StaffDashboard extends StatelessWidget {
                             ));
                       },
                       child: Card(
-                        color: Colors.white,
+                        color: Colors.deepPurple[100],
                         shape: RoundedRectangleBorder(
                             borderRadius:
                                 BorderRadius.all(Radius.circular(30))),
@@ -306,6 +429,40 @@ class StaffDashboard extends StatelessWidget {
                         ),
                       ),
                     ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ViewMeal(),
+                            ));
+                      },
+                      child: Card(
+                        color: Colors.deepPurple[100],
+                        shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(30))),
+                        child: Column(
+                          children: [
+                            SizedBox(height: 20),
+                            Icon(
+                              Icons.food_bank,
+                              color: Colors.deepPurple,
+                              size: 60,
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text('Meal Details',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontFamily: 'Lato',
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black)),
+                          ],
+                        ),
+                      ),
+                    ),
                   ]),
               SizedBox(height: 20),
               Padding(
@@ -323,53 +480,6 @@ class StaffDashboard extends StatelessWidget {
                           borderSide: BorderSide(color: Colors.deepPurple))),
                 ),
               ),
-              // ListView(
-              //   shrinkWrap: true,
-              //   children: [
-              //     ListTile(
-              //       leading: CircleAvatar(
-              //         backgroundImage: NetworkImage(
-              //             'https://th.bing.com/th/id/OIP.JE2bVytitM8W0vzhYQRQaQHaEK?rs=1&pid=ImgDetMain'),
-              //       ),
-              //       title: Text("Anon"),
-              //     ),
-              //     ListTile(
-              //       leading: CircleAvatar(
-              //         backgroundImage: NetworkImage(
-              //             'https://th.bing.com/th/id/OIP.JE2bVytitM8W0vzhYQRQaQHaEK?rs=1&pid=ImgDetMain'),
-              //       ),
-              //       title: Text("Joe"),
-              //     ),
-              //     ListTile(
-              //       leading: CircleAvatar(
-              //         backgroundImage: NetworkImage(
-              //             'https://th.bing.com/th/id/OIP.JE2bVytitM8W0vzhYQRQaQHaEK?rs=1&pid=ImgDetMain'),
-              //       ),
-              //       title: Text("Roman"),
-              //     ),
-              //     ListTile(
-              //       leading: CircleAvatar(
-              //         backgroundImage: NetworkImage(
-              //             'https://th.bing.com/th/id/OIP.JE2bVytitM8W0vzhYQRQaQHaEK?rs=1&pid=ImgDetMain'),
-              //       ),
-              //       title: Text("Miya"),
-              //     ),
-              //     ListTile(
-              //       leading: CircleAvatar(
-              //         backgroundImage: NetworkImage(
-              //             'https://th.bing.com/th/id/OIP.JE2bVytitM8W0vzhYQRQaQHaEK?rs=1&pid=ImgDetMain'),
-              //       ),
-              //       title: Text("Nimy"),
-              //     ),
-              //     ListTile(
-              //       leading: CircleAvatar(
-              //         backgroundImage: NetworkImage(
-              //             'https://th.bing.com/th/id/OIP.JE2bVytitM8W0vzhYQRQaQHaEK?rs=1&pid=ImgDetMain'),
-              //       ),
-              //       title: Text("Femi"),
-              //     )
-              //   ],
-              // )
             ],
           ),
         ));

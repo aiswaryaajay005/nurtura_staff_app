@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:staff_app/main.dart';
 import 'package:intl/intl.dart';
-import 'package:staff_app/view_attendence.dart';
+import 'package:staff_app/staffattendencecalender.dart';
 
 class AttendencePage extends StatefulWidget {
   const AttendencePage({super.key});
@@ -12,6 +12,8 @@ class AttendencePage extends StatefulWidget {
 
 class _AttendencePageState extends State<AttendencePage> {
   List<Map<String, dynamic>> childrens = [];
+  String formattedDate =
+      DateFormat('EEEE, MMMM d, yyyy').format(DateTime.now());
 
   @override
   void initState() {
@@ -85,11 +87,10 @@ class _AttendencePageState extends State<AttendencePage> {
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
         iconTheme: IconThemeData(color: Colors.white),
-        title: Text("Mark Attendance",
-            style: TextStyle(
-              color: Colors.white,
-              fontFamily: 'Nunito',
-            )),
+        title: Text(
+          "Mark Attendance",
+          style: TextStyle(color: Colors.white, fontFamily: 'Nunito'),
+        ),
         actions: [
           Text(
             "Nurtura",
@@ -107,92 +108,119 @@ class _AttendencePageState extends State<AttendencePage> {
           SizedBox(width: 20),
         ],
       ),
-      body: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: ListView.builder(
-            itemCount: childrens.length,
-            itemBuilder: (context, index) {
-              final child = childrens[index];
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundImage: NetworkImage(
-                            child['child_photo'] ?? 'Not available'),
-                      ),
-                      SizedBox(width: 15),
-                      Text(
-                        child['child_name'] ?? 'Unknown',
-                        style: TextStyle(fontSize: 20, fontFamily: 'Nunito'),
-                      ),
-                      Spacer(),
-                      Column(
+      body: Column(
+        children: [
+          // Current Date Display
+          Container(
+            width: double.infinity,
+            color: Colors.deepPurple.shade100,
+            padding: EdgeInsets.symmetric(vertical: 10),
+            child: Center(
+              child: Text(
+                formattedDate, // Displays the formatted date
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Nunito',
+                ),
+              ),
+            ),
+          ),
+
+          // Attendance List
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: ListView.builder(
+                itemCount: childrens.length,
+                itemBuilder: (context, index) {
+                  final child = childrens[index];
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Row(
                         children: [
-                          SizedBox(
-                            width: 100,
-                            child: TextButton(
-                              onPressed: () => markAbsent(child['id']),
-                              style: TextButton.styleFrom(
-                                  backgroundColor: Colors.deepPurple),
-                              child: Text(
-                                'Absent',
-                                style: TextStyle(
-                                    color: Colors.white, fontFamily: 'Nunito'),
-                              ),
-                            ),
+                          CircleAvatar(
+                            radius: 40,
+                            backgroundImage: NetworkImage(
+                                child['child_photo'] ?? 'Not available'),
                           ),
-                          SizedBox(height: 5),
-                          SizedBox(
-                            width: 100,
-                            child: TextButton(
-                              onPressed: () => checkIn(child['id']),
-                              style: TextButton.styleFrom(
-                                  backgroundColor: Colors.deepPurple),
-                              child: Text(
-                                'Check-In',
-                                style: TextStyle(
-                                    color: Colors.white, fontFamily: 'Nunito'),
-                              ),
-                            ),
+                          SizedBox(width: 15),
+                          Text(
+                            child['child_name'] ?? 'Unknown',
+                            style:
+                                TextStyle(fontSize: 20, fontFamily: 'Nunito'),
                           ),
-                          SizedBox(height: 5),
-                          SizedBox(
-                            width: 100,
-                            child: TextButton(
-                              onPressed: () => checkOut(child['id']),
-                              style: TextButton.styleFrom(
-                                  backgroundColor: Colors.deepPurple),
-                              child: Text(
-                                'Check-Out',
-                                style: TextStyle(
-                                    color: Colors.white, fontFamily: 'Nunito'),
+                          Spacer(),
+                          Column(
+                            children: [
+                              SizedBox(
+                                width: 100,
+                                child: TextButton(
+                                  onPressed: () => markAbsent(child['id']),
+                                  style: TextButton.styleFrom(
+                                      backgroundColor: Colors.deepPurple),
+                                  child: Text(
+                                    'Absent',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'Nunito'),
+                                  ),
+                                ),
                               ),
-                            ),
+                              SizedBox(height: 5),
+                              SizedBox(
+                                width: 100,
+                                child: TextButton(
+                                  onPressed: () => checkIn(child['id']),
+                                  style: TextButton.styleFrom(
+                                      backgroundColor: Colors.deepPurple),
+                                  child: Text(
+                                    'Check-In',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'Nunito'),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 5),
+                              SizedBox(
+                                width: 100,
+                                child: TextButton(
+                                  onPressed: () => checkOut(child['id']),
+                                  style: TextButton.styleFrom(
+                                      backgroundColor: Colors.deepPurple),
+                                  child: Text(
+                                    'Check-Out',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'Nunito'),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
+                          SizedBox(width: 10),
                         ],
                       ),
-                      SizedBox(width: 10),
-                    ],
-                  ),
-                ),
-              );
-            },
-          )),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => StaffAttendanceView(),
+                builder: (context) => StaffAttendanceCalendar(),
               ));
         },
-        child: Text("view"),
+        child: Text("View"),
       ),
     );
   }
 }
-/*
- */

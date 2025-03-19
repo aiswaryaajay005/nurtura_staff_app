@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:staff_app/edit_activity.dart';
 import 'package:staff_app/main.dart';
 
 class ViewChildActivity extends StatefulWidget {
@@ -12,6 +13,7 @@ class ViewChildActivity extends StatefulWidget {
 class _ViewChildActivityState extends State<ViewChildActivity> {
   List<Map<String, dynamic>> childactivity = [];
   bool isLoading = true;
+
   Future<void> fetchActivity() async {
     try {
       final response = await supabase
@@ -28,7 +30,7 @@ class _ViewChildActivityState extends State<ViewChildActivity> {
       print("Error: $e");
     } finally {
       setState(() {
-        isLoading = false; // Stop loading after fetching data
+        isLoading = false;
       });
     }
   }
@@ -50,34 +52,16 @@ class _ViewChildActivityState extends State<ViewChildActivity> {
                 fontFamily: 'Lato',
                 fontWeight: FontWeight.bold,
                 color: Colors.white)),
-        actions: [
-          Text(
-            "Nurtura",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'AmsterdamThree',
-              fontSize: 40,
-            ),
-          ),
-          SizedBox(width: 10),
-          CircleAvatar(
-            backgroundImage: AssetImage('assets/images/image.png'),
-          ),
-          SizedBox(width: 20),
-        ],
       ),
       body: isLoading
-          ? Center(
-              child: CircularProgressIndicator()) // Show loader while fetching
+          ? Center(child: CircularProgressIndicator())
           : childactivity.isEmpty
               ? Center(child: Text("No activity available"))
-              : Expanded(
-                  child: GridView.builder(
+              : GridView.builder(
                   padding: EdgeInsets.all(10),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.7,
+                    childAspectRatio: 0.6,
                   ),
                   itemCount: childactivity.length,
                   itemBuilder: (context, index) {
@@ -89,111 +73,90 @@ class _ViewChildActivityState extends State<ViewChildActivity> {
                       ),
                       child: Padding(
                         padding: EdgeInsets.all(8.0),
-                        child: Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(height: 5),
-                              Align(
-                                alignment: Alignment.topRight,
-                                child: Text(
-                                  activity['activity_date'] ?? 'No Details',
-                                  style: TextStyle(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Align(
+                              alignment: Alignment.topRight,
+                              child: Text(
+                                activity['activity_date'] ?? 'No Details',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                  fontFamily: 'Lato',
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            Text("Feeling details:",
+                                style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold,
                                     fontFamily: 'Lato',
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                "Feeling details:",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Lato',
-                                  color: Colors.deepPurple,
-                                ),
-                              ),
-                              Text(
-                                activity['feeling_details'] ?? 'No Details',
+                                    color: Colors.deepPurple)),
+                            Text(activity['feeling_details'] ?? 'No Details',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.black,
                                   fontFamily: 'Lato',
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                "Nap details:",
+                                )),
+                            SizedBox(height: 10),
+                            Text("Nap details:",
                                 style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Lato',
-                                  color: Colors.deepPurple,
-                                ),
-                              ),
-                              Text(
-                                activity['nap_schedule'] ?? 'No Details',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Lato',
+                                    color: Colors.deepPurple)),
+                            Text(activity['nap_schedule'] ?? 'No Details',
+                                style: TextStyle(fontSize: 14)),
+                            SizedBox(height: 10),
+                            Text("Playtime activities:",
                                 style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                  fontFamily: 'Lato',
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                "Playtime activities:",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Lato',
-                                  color: Colors.deepPurple,
-                                ),
-                              ),
-                              Text(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Lato',
+                                    color: Colors.deepPurple)),
+                            Text(
                                 activity['playtime_activities'] ?? 'No Details',
+                                style: TextStyle(fontSize: 14)),
+                            SizedBox(height: 10),
+                            Text("Learning activities:",
                                 style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                  fontFamily: 'Lato',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Lato',
+                                    color: Colors.deepPurple)),
+                            Text(
+                                activity['learning_activities'] ?? 'No Details',
+                                style: TextStyle(fontSize: 14)),
+                            Spacer(),
+                            Center(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.deepPurple,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          EditActivity(activityData: activity),
+                                    ),
+                                  );
+                                },
+                                child: Text("Edit",
+                                    style: TextStyle(color: Colors.white)),
                               ),
-                              SizedBox(height: 10),
-                              Text(
-                                "Learning activities:",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Lato',
-                                  color: Colors.deepPurple,
-                                ),
-                              ),
-                              Text(
-                                activity['learning_actvities'] ?? 'No Details',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                  fontFamily: 'Lato',
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     );
                   },
-                )),
+                ),
     );
   }
 }

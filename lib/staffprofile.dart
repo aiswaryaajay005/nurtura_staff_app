@@ -259,25 +259,6 @@ class _AccountPageState extends State<AccountPage> {
                       Padding(
                         padding: const EdgeInsets.only(
                             left: 100, right: 100, top: 30),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple[300],
-                          ),
-                          onPressed: () {
-                            _showBottomSheet(context, 'staff_name');
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Text(
-                              'Edit Profile',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            left: 100, right: 100, top: 30),
                         child: ElevatedButton.icon(
                           onPressed: () async {
                             await supabase.auth.signOut();

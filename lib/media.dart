@@ -1,6 +1,7 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
 import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:staff_app/main.dart';
@@ -13,191 +14,210 @@ class MediaPage extends StatefulWidget {
 }
 
 class _MediaPageState extends State<MediaPage> {
-  File? _image;
+  List<File> _images = [];
   final ImagePicker _picker = ImagePicker();
   final TextEditingController _postcontroller = TextEditingController();
 
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    print(pickedFile);
-    if (pickedFile != null) {
+  // Pick multiple images
+  Future<void> _pickImages() async {
+    final List<XFile>? pickedFiles = await _picker.pickMultiImage();
+    if (pickedFiles != null && pickedFiles.isNotEmpty) {
       setState(() {
-        _image = File(pickedFile.path);
+        _images = pickedFiles.map((file) => File(file.path)).toList();
       });
     }
   }
 
+  // Upload images to Supabase and save in tbl_post
   Future<void> _mediaupload() async {
     try {
       String userId = supabase.auth.currentUser!.id;
-      String? photoUrl;
-      if (_image != null) {
-        photoUrl = await _uploadImage(_image!, userId);
+
+      if (_images.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Please select at least one image.")));
+        return;
       }
 
-      await supabase.from("tbl_post").insert({
-        'post_file': photoUrl,
-        'staff_id': userId,
-        'post_title': _postcontroller.text
+      // Upload images and get their URLs
+      List<String> photoUrls = await _uploadImages(_images, userId);
+
+      // Insert each image as a new row in tbl_post
+      for (String url in photoUrls) {
+        await supabase.from("tbl_post").insert({
+          'post_file': url, // Single image per row
+          'staff_id': userId,
+          'post_title': _postcontroller.text
+        });
+      }
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Posts Added")));
+
+      // Clear the selected images
+      setState(() {
+        _images.clear();
+        _postcontroller.clear();
       });
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Post Added")));
     } catch (e) {
-      print("Error:$e");
+      print("Error: $e");
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error:$e")));
+          .showSnackBar(SnackBar(content: Text("Error: $e")));
     }
   }
 
-  Future<String?> _uploadImage(File image, String userId) async {
+  // Upload images to Supabase and return their URLs
+  Future<List<String>> _uploadImages(List<File> images, String userId) async {
+    List<String> uploadedUrls = [];
+
     try {
-      final fileName = 'post_$userId-${DateTime.now().millisecondsSinceEpoch}';
-      print("Uploading image: $fileName");
-
-      await supabase.storage.from('post').upload(fileName, image);
-      print("Image uploaded successfully");
-
-      // Get public URL of the uploaded image
-      final imageUrl = supabase.storage.from('post').getPublicUrl(fileName);
-      print("Image URL: $imageUrl");
-
-      return imageUrl;
+      for (File image in images) {
+        final fileName =
+            'post_$userId-${DateTime.now().millisecondsSinceEpoch}';
+        await supabase.storage.from('post').upload(fileName, image);
+        final imageUrl = supabase.storage.from('post').getPublicUrl(fileName);
+        uploadedUrls.add(imageUrl);
+      }
     } catch (e) {
       print('Image upload failed: $e');
-      return null;
     }
+
+    return uploadedUrls;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.deepPurple.shade400,
-        actions: [
-          Text(
-            "Nurtura",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'AmsterdamThree',
-              fontSize: 40,
+        appBar: AppBar(
+          backgroundColor: Colors.deepPurple.shade400,
+          actions: [
+            Text(
+              "Nurtura",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'AmsterdamThree',
+                fontSize: 40,
+              ),
             ),
-          ),
-          SizedBox(width: 10),
-          CircleAvatar(
-            backgroundImage: AssetImage('assets/images/image.png'),
-          ),
-          SizedBox(width: 20),
-        ],
-      ),
-      body: Form(
-          child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          children: [
-            Column(
-              children: [
-                Text('Upload Post',
-                    style: TextStyle(
-                        fontSize: 40,
-                        fontFamily: 'Croist',
-                        color: Colors.deepPurple)),
-                SizedBox(height: 20),
-                Center(
-                  child: GestureDetector(
-                    onTap: _pickImage,
-                    child: DottedBorder(
-                      color: Colors.deepPurple, // Border color
-                      strokeWidth: 2, // Border width
-                      borderType: BorderType.RRect, // Rounded rectangle
-                      radius: Radius.circular(12), // Border radius
-                      dashPattern: [6, 3], // Dash and gap length
-                      child: Card(
-                        shadowColor: Colors.deepPurple,
-                        child: Column(
-                          children: [
-                            SizedBox(width: 300),
-                            SizedBox(height: 10),
-                            CircleAvatar(
-                              radius: 50,
-                              backgroundColor: Colors.deepPurple[200],
-                              backgroundImage:
-                                  _image != null ? FileImage(_image!) : null,
-                              child: _image == null
-                                  ? const Icon(Icons.camera_alt,
-                                      color: Colors.white, size: 40)
-                                  : null,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'Click here to upload',
-                                style: TextStyle(
-                                    color:
-                                        const Color.fromRGBO(103, 58, 183, 1),
-                                    fontFamily: 'Lato',
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold),
+            SizedBox(width: 10),
+            CircleAvatar(
+              backgroundImage: AssetImage('assets/images/image.png'),
+            ),
+            SizedBox(width: 20),
+          ],
+        ),
+        body: Form(
+            child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            children: [
+              Column(
+                children: [
+                  Text('Upload Post',
+                      style: TextStyle(
+                          fontSize: 40,
+                          fontFamily: 'Croist',
+                          color: Colors.deepPurple)),
+                  SizedBox(height: 20),
+                  Center(
+                    child: GestureDetector(
+                      onTap: _pickImages,
+                      child: DottedBorder(
+                        color: Colors.deepPurple,
+                        strokeWidth: 2,
+                        borderType: BorderType.RRect,
+                        radius: Radius.circular(12),
+                        dashPattern: [6, 3],
+                        child: Card(
+                          shadowColor: Colors.deepPurple,
+                          child: Column(
+                            children: [
+                              SizedBox(height: 10),
+                              Wrap(
+                                spacing: 8.0,
+                                runSpacing: 8.0,
+                                children: _images.map((image) {
+                                  return ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: Image.file(
+                                      image,
+                                      width: 80,
+                                      height: 80,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  );
+                                }).toList(),
                               ),
-                            )
-                          ],
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  _images.isEmpty
+                                      ? 'Click here to upload'
+                                      : '${_images.length} image(s) selected',
+                                  style: TextStyle(
+                                      color: Colors.deepPurple,
+                                      fontFamily: 'Lato',
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(height: 20),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      children: [
-                        SizedBox(height: 10),
-                        TextFormField(
-                          controller: _postcontroller,
-                          decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20)),
-                              labelText: 'Post Name',
-                              labelStyle: TextStyle(
-                                  fontFamily: 'Lato',
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w500),
-                              focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  borderSide:
-                                      BorderSide(color: Colors.deepPurple))),
-                        ),
-                        SizedBox(
-                          height: 20,
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple[300],
+                  SizedBox(height: 20),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 10),
+                          TextFormField(
+                              controller: _postcontroller,
+                              decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(20)),
+                                  labelText: 'Post Name',
+                                  labelStyle: TextStyle(
+                                      fontFamily: 'Lato',
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w500),
+                                  focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                      borderSide: BorderSide(
+                                          color: Colors.deepPurple)))),
+                          SizedBox(
+                            height: 20,
                           ),
-                          onPressed: () {
-                            _mediaupload();
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Text(
-                              'Upload',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontFamily: 'Lato',
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.deepPurple[300],
+                            ),
+                            onPressed: () {
+                              _mediaupload();
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Text(
+                                'Upload',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'Lato',
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            )
-          ],
-        ),
-      )),
-    );
+                ],
+              )
+            ],
+          ),
+        )));
   }
 }

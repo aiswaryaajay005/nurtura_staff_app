@@ -5,6 +5,7 @@ import 'package:staff_app/child_view.dart';
 import 'package:staff_app/event_participant_list.dart';
 
 import 'package:confetti/confetti.dart';
+import 'package:staff_app/inform_leave.dart';
 import 'package:staff_app/main.dart';
 import 'package:staff_app/schedule.dart';
 import 'package:staff_app/staffprofile.dart';
@@ -171,10 +172,10 @@ class _StaffDashboardState extends State<StaffDashboard> {
             SizedBox(width: 20),
           ],
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              GridView(
+        body: Column(
+          children: [
+            Expanded(
+              child: GridView(
                   padding: EdgeInsets.all(20),
                   shrinkWrap: true,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -463,25 +464,46 @@ class _StaffDashboardState extends State<StaffDashboard> {
                         ),
                       ),
                     ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => InformLeave(),
+                            ));
+                      },
+                      child: Card(
+                        color: Colors.deepPurple.shade100,
+                        shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(30))),
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Icon(
+                              Icons.sick,
+                              color: Colors.deepPurple,
+                              size: 60,
+                            ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            Text('Inform Leave',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontFamily: 'Lato',
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black)),
+                          ],
+                        ),
+                      ),
+                    ),
                   ]),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.only(left: 30, right: 30, bottom: 10),
-                child: TextFormField(
-                  decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20))),
-                      labelStyle: TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.w500),
-                      hintText: 'Search',
-                      suffixIcon: Icon(Icons.search, color: Colors.deepPurple),
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20)),
-                          borderSide: BorderSide(color: Colors.deepPurple))),
-                ),
-              ),
-            ],
-          ),
+            ),
+            SizedBox(height: 20)
+          ],
         ));
   }
 }
